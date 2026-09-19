@@ -5,12 +5,36 @@ import yfinance as yf
 BOT_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
-with open("tickers.txt", "r") as f:
-    symbols = [
-        line.strip()
-        for line in f
-        if line.strip()
-    ]
+symbols = set()
+
+index_files = [
+    "sp500.txt",
+    "nasdaq100.txt",
+    "dowjones.txt",
+    "dax40.txt",
+    "stoxx50.txt",
+    "ftse100.txt"
+]
+
+for filename in index_files:
+
+    try:
+
+        with open(filename, "r") as f:
+
+            for line in f:
+
+                symbol = line.strip()
+
+                if symbol:
+                    symbols.add(symbol)
+
+    except Exception as e:
+
+        print(f"{filename} nicht gefunden")
+
+symbols = list(symbols)
+print(f"{len(symbols)} Aktien geladen")
 
 results = []
 
