@@ -4,16 +4,15 @@ import requests
 BOT_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
-message = "🚀 Testnachricht vom Aktienscanner"
-
 url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
-requests.post(
+response = requests.post(
     url,
     data={
         "chat_id": CHAT_ID,
-        "text": message
+        "text": "🚀 Testnachricht vom Aktienscanner"
     }
 )
 
-print("Telegram-Nachricht versendet")
+print(response.status_code)
+print(response.text)
