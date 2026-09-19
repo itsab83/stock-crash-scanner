@@ -1,1 +1,10 @@
 
+JPM
+BAC
+GS
+WMT
+MCD
+NKE
+CAT
+HON
+``
