@@ -55,7 +55,8 @@ for symbol in symbols:
             (current_price - previous_close)
             / previous_close
         ) * 100
-
+if change > -5:
+    continue
         results.append({
             "symbol": symbol,
             "change": change
@@ -72,14 +73,14 @@ results.sort(
 # Top 10 Verlierer
 top_losers = results[:10]
 
-message = "🚨 Top 10 Verlierer\n\n"
+message = "🚨 Börsencrash Scanner\n\n"
 
 for stock in top_losers:
 
-    message += (
-        f"{stock['symbol']} "
-        f"{stock['change']:.2f}%\n"
-    )
+   message += (
+    f"📉 {stock['symbol']}\n"
+    f"{stock['change']:.2f}%\n\n"
+)
 
 # Telegram senden
 url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
