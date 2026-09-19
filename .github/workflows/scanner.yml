@@ -3,6 +3,9 @@ name: Stock Scanner
 on:
   workflow_dispatch:
 
+  schedule:
+    - cron: '0 14 * * 1-5'
+
 jobs:
   scan:
     runs-on: ubuntu-latest
