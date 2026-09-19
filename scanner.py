@@ -1,7 +1,19 @@
-import yfinance as yf
+import os
+import requests
 
-ticker = yf.Ticker("AAPL")
+BOT_TOKEN = os.environ["TELEGRAM_TOKEN"]
+CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
-hist = ticker.history(period="5d")
+message = "🚀 Testnachricht vom Aktienscanner"
 
-print(hist.tail())
+url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+
+requests.post(
+    url,
+    data={
+        "chat_id": CHAT_ID,
+        "text": message
+    }
+)
+
+print("Telegram-Nachricht versendet")
