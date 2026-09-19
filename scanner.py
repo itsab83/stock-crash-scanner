@@ -1,9 +1,49 @@
 import os
 import requests
 import yfinance as yf
+from datetime import date
 
 BOT_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
+FINNHUB_API_KEY = os.environ["FINNHUB_API_KEY"]
+
+
+def get_reason(symbol):
+
+    try:
+
+        today = date.today().isoformat()
+
+        url = (
+            "https://finnhub.io/api/v1/company-news"
+            f"?symbol={symbol}"
+            f"&from={today}"
+            f"&to={today}"
+            f"&token={FINNHUB_API_KEY}"
+        )
+
+        response = requests.get(url, timeout=10)
+
+        if response.status_code != 200:
+            return "Finnhub Anfrage fehlgeschlagen"
+
+        news = response.json()
+
+        if not news:
+            return "Keine aktuelle News gefunden"
+
+        headline = news[0].get("headline")
+
+        if headline:
+            return headline
+
+        return "Keine News gefunden"
+
+    except Exception as e:
+
+        print(f"News-Fehler {symbol}: {e}")
+        return "News konnten nicht geladen werden"
+
 
 symbols = set()
 
@@ -34,6 +74,7 @@ for filename in index_files:
         print(f"{filename} nicht gefunden")
 
 symbols = list(symbols)
+
 print(f"{len(symbols)} Aktien geladen")
 
 results = []
@@ -57,7 +98,7 @@ for symbol in symbols:
             / previous_close
         ) * 100
 
-        # Nur echte Crashs berücksichtigen
+        # Nur Aktien mit mindestens 5 % Verlust
         if change > -5:
             continue
 
@@ -67,6 +108,7 @@ for symbol in symbols:
         })
 
     except Exception as e:
+
         print(f"Fehler bei {symbol}: {e}")
 
 results.sort(
@@ -80,20 +122,26 @@ message = "🚨 Börsencrash Scanner\n\n"
 if len(top_losers) == 0:
 
     message += (
-        "✅ Keine Aktien mit mehr "
-        "als 5% Verlust gefunden."
+        "✅ Keine Aktien mit mehr als "
+        "5 % Verlust gefunden."
     )
 
 else:
 
     for stock in top_losers:
 
+        reason = get_reason(stock["symbol"])
+
         message += (
             f"📉 {stock['symbol']}\n"
-            f"{stock['change']:.2f}%\n\n"
+            f"{stock['change']:.2f}%\n"
+            f"Grund: {reason}\n\n"
         )
 
-url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+url = (
+    f"https://api.telegram.org/"
+    f"bot{BOT_TOKEN}/sendMessage"
+)
 
 response = requests.post(
     url,
