@@ -19,4 +19,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Scanner starten
-        run: python scanner.py
+  env:
+    TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+    TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+  run: python scanner.py
