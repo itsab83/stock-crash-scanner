@@ -20,6 +20,6 @@ jobs:
 
       - name: Scanner starten
   env:
-    TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-    TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    TELEGRAM_TOKEN: ${{ secrets.8466972143:AAHDKuZTt0FfQbQ5eF0zDOoQT1nVZryEloY }}
+    TELEGRAM_CHAT_ID: ${{ secrets.151866087 }}
   run: python scanner.py
