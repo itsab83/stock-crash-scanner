@@ -15,5 +15,8 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Script starten
+      - name: Bibliotheken installieren
+        run: pip install -r requirements.txt
+
+      - name: Scanner starten
         run: python scanner.py
