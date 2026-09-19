@@ -23,6 +23,7 @@ jobs:
 
       - name: Scanner starten
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+  TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+  FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
         run: python scanner.py
