@@ -9,7 +9,6 @@ FINNHUB_API_KEY = os.environ["FINNHUB_API_KEY"]
 
 
 def get_reason(symbol):
-
     try:
 
         today = date.today().isoformat()
@@ -29,10 +28,10 @@ def get_reason(symbol):
 
         news = response.json()
 
-        if not news:
+        if len(news) == 0:
             return "Keine aktuelle News gefunden"
 
-        headline = news[0].get("headline")
+        headline = news[0].get("headline", "")
 
         if headline:
             return headline
@@ -41,7 +40,7 @@ def get_reason(symbol):
 
     except Exception as e:
 
-        print(f"News-Fehler {symbol}: {e}")
+        print(f"News-Fehler bei {symbol}: {e}")
         return "News konnten nicht geladen werden"
 
 
@@ -98,7 +97,6 @@ for symbol in symbols:
             / previous_close
         ) * 100
 
-        # Nur Aktien mit mindestens 5 % Verlust
         if change > -5:
             continue
 
@@ -111,9 +109,7 @@ for symbol in symbols:
 
         print(f"Fehler bei {symbol}: {e}")
 
-results.sort(
-    key=lambda x: x["change"]
-)
+results.sort(key=lambda x: x["change"])
 
 top_losers = results[:10]
 
@@ -122,8 +118,7 @@ message = "🚨 Börsencrash Scanner\n\n"
 if len(top_losers) == 0:
 
     message += (
-        "✅ Keine Aktien mit mehr als "
-        "5 % Verlust gefunden."
+        "✅ Keine Aktien mit mehr als 5% Verlust gefunden."
     )
 
 else:
@@ -138,10 +133,7 @@ else:
             f"Grund: {reason}\n\n"
         )
 
-url = (
-    f"https://api.telegram.org/"
-    f"bot{BOT_TOKEN}/sendMessage"
-)
+url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
 response = requests.post(
     url,
