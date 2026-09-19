@@ -1,30 +1,25 @@
 import os
 import requests
+import pandas as pd
 import yfinance as yf
 
 BOT_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
-watchlist = [
-    "AAPL",
-    "MSFT",
-    "NVDA",
-    "AMZN",
-    "META",
-    "TSLA",
-    "PLTR",
-    "CRWD",
-    "SNOW",
-    "AMD"
-]
+# S&P 500 laden
+url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 
-message = "🚨 US Crash Scanner\n\n"
+sp500 = pd.read_html(url)[0]
 
-found = False
+symbols = sp500["Symbol"].tolist()
 
-for symbol in watchlist:
+results = []
+
+for symbol in symbols:
 
     try:
+
+        symbol = symbol.replace(".", "-")
 
         stock = yf.Ticker(symbol)
 
@@ -33,29 +28,36 @@ for symbol in watchlist:
         if len(hist) < 2:
             continue
 
-        yesterday = hist["Close"].iloc[-2]
-        today = hist["Close"].iloc[-1]
+        previous = hist["Close"].iloc[-2]
+        current = hist["Close"].iloc[-1]
 
-        change = ((today - yesterday) / yesterday) * 100
+        change = ((current - previous) / previous) * 100
 
-        if change <= -3:
-
-            found = True
-
-            message += (
-                f"{symbol}: {change:.2f}%\n"
-            )
+        results.append({
+            "symbol": symbol,
+            "change": change
+        })
 
     except Exception:
         pass
 
-if not found:
-    message += "Keine größeren Kursstürze gefunden."
+results.sort(
+    key=lambda x: x["change"]
+)
 
-url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+top_losers = results[:10]
+
+message = "🚨 Top Verlierer S&P 500\n\n"
+
+for stock in top_losers:
+
+    message += (
+        f"{stock['symbol']} "
+        f"{stock['change']:.2f}%\n"
+    )
 
 requests.post(
-    url,
+    f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
     data={
         "chat_id": CHAT_ID,
         "text": message
