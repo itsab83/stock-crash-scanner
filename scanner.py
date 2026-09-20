@@ -115,6 +115,34 @@ def get_6m_performance(symbol):
         return None
 
 
+def get_distance_to_52w_high(symbol):
+
+    try:
+
+        stock = yf.Ticker(symbol)
+
+        hist = stock.history(
+            period="1y"
+        )
+
+        if len(hist) < 2:
+            return None
+
+        high_52w = hist["High"].max()
+        current_price = hist["Close"].iloc[-1]
+
+        distance = (
+            (current_price - high_52w)
+            / high_52w
+        ) * 100
+
+        return distance
+
+    except Exception:
+
+        return None
+
+
 symbols = set()
 
 for filename in [
@@ -139,9 +167,7 @@ for filename in [
 
     except Exception as e:
 
-        print(
-            f"Fehler bei {filename}: {e}"
-        )
+        print(f"Fehler bei {filename}: {e}")
 
 results = []
 
@@ -166,7 +192,7 @@ for symbol in symbols:
             / previous_close
         ) * 100
 
-        # Nur echte Crashs
+        # Nur relevante Kursstürze
         if change > -4:
             continue
 
@@ -177,9 +203,7 @@ for symbol in symbols:
 
     except Exception as e:
 
-        print(
-            f"Fehler bei {symbol}: {e}"
-        )
+        print(f"Fehler bei {symbol}: {e}")
 
 results.sort(
     key=lambda x: x["change"]
@@ -211,23 +235,34 @@ for stock in top_losers:
         stock["symbol"]
     )
 
+    distance_52w = get_distance_to_52w_high(
+        stock["symbol"]
+    )
+
     if perf_6m is None:
         perf_text = "nicht verfügbar"
     else:
         perf_text = f"{perf_6m:.1f}%"
 
-    chart_url = (
-    f"https://finance.yahoo.com/chart/{stock['symbol']}"
-)
+    if distance_52w is None:
+        high_text = "nicht verfügbar"
+    else:
+        high_text = f"{distance_52w:.1f}%"
 
-message += (
-    f"📉 {stock['symbol']}\n"
-    f"Heute: {stock['change']:.2f}%\n"
-    f"6 Monate: {perf_text}\n"
-    f"Kategorie: {category}\n"
-    f"Grund: {reason}\n"
-    f"Chart: {chart_url}\n\n"
-)
+    chart_url = (
+        f"https://finance.yahoo.com/chart/"
+        f"{stock['symbol']}"
+    )
+
+    message += (
+        f"📉 {stock['symbol']}\n"
+        f"Heute: {stock['change']:.2f}%\n"
+        f"6 Monate: {perf_text}\n"
+        f"52W-Hoch: {high_text}\n"
+        f"Kategorie: {category}\n"
+        f"Grund: {reason}\n"
+        f"Chart: {chart_url}\n\n"
+    )
 
 url = (
     f"https://api.telegram.org/"
