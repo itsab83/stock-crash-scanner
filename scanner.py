@@ -99,4 +99,6 @@ for symbol in symbols:
             continue
 
         results.append({
-            "symbol": symbol
+    "symbol": symbol,
+    "change": change
+})
