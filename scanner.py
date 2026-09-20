@@ -9,15 +9,18 @@ def get_reason(symbol):
 
     try:
 
-        today = date.today().isoformat()
+        from datetime import date, timedelta
 
-        url = (
-            "https://finnhub.io/api/v1/company-news"
-            f"?symbol={symbol}"
-            f"&from={today}"
-            f"&to={today}"
-            f"&token={FINNHUB_API_KEY}"
-        )
+to_date = date.today()
+from_date = to_date - timedelta(days=3)
+
+url = (
+    "https://finnhub.io/api/v1/company-news"
+    f"?symbol={symbol}"
+    f"&from={from_date.isoformat()}"
+    f"&to={to_date.isoformat()}"
+    f"&token={FINNHUB_API_KEY}"
+)
 
         response = requests.get(url)
 
