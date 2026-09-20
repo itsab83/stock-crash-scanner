@@ -1,3 +1,4 @@
+
 import os
 import requests
 import yfinance as yf
@@ -17,7 +18,7 @@ def get_reason(symbol):
     try:
 
         to_date = date.today()
-        from_date = to_date - timedelta(days=3)
+        from_date = to_date - timedelta(days=7)
 
         url = (
             "https://finnhub.io/api/v1/company-news"
@@ -53,10 +54,10 @@ symbols = set()
 for filename in [
     "sp500.txt",
     "nasdaq100.txt",
+    "dowjones.txt",
     "dax40.txt",
     "stoxx50.txt",
-    "ftse100.txt",
-    "dowjones.txt"
+    "ftse100.txt"
 ]:
 
     try:
@@ -70,9 +71,11 @@ for filename in [
                 if symbol:
                     symbols.add(symbol)
 
-    except Exception:
+    except Exception as e:
 
-        pass
+        print(
+            f"Fehler bei {filename}: {e}"
+        )
 
 results = []
 
@@ -97,7 +100,7 @@ for symbol in symbols:
             / previous_close
         ) * 100
 
-        # Nur relevante Crashes
+        # Nur Aktien mit mindestens 6 % Verlust
         if change > -6:
             continue
 
@@ -118,30 +121,33 @@ results.sort(
 
 top_losers = results[:10]
 
+# WICHTIG:
+# Keine Telegram-Nachricht versenden,
+# wenn keine Aktie den Filter erfüllt
+
+if len(top_losers) == 0:
+
+    print(
+        "Keine Aktien mit mehr als 6 % Verlust gefunden."
+    )
+
+    exit()
+
 message = (
     "🚨 Börsencrash Scanner\n\n"
 )
 
-if len(top_losers) == 0:
+for stock in top_losers:
 
-    message += (
-        "✅ Keine Aktien mit mehr "
-        "als 6 % Verlust gefunden."
+    reason = get_reason(
+        stock["symbol"]
     )
 
-else:
-
-    for stock in top_losers:
-
-        reason = get_reason(
-            stock["symbol"]
-        )
-
-        message += (
-            f"📉 {stock['symbol']}\n"
-            f"{stock['change']:.2f}%\n"
-            f"Grund: {reason}\n\n"
-        )
+    message += (
+        f"📉 {stock['symbol']}\n"
+        f"{stock['change']:.2f}%\n"
+        f"Grund: {reason}\n\n"
+    )
 
 url = (
     f"https://api.telegram.org/"
