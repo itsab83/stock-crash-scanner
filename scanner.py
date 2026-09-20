@@ -1,6 +1,39 @@
 import os
 import requests
 import yfinance as yf
+from datetime import date
+
+FINNHUB_API_KEY = os.environ["FINNHUB_API_KEY"]
+
+def get_reason(symbol):
+
+    try:
+
+        today = date.today().isoformat()
+
+        url = (
+            "https://finnhub.io/api/v1/company-news"
+            f"?symbol={symbol}"
+            f"&from={today}"
+            f"&to={today}"
+            f"&token={FINNHUB_API_KEY}"
+        )
+
+        response = requests.get(url)
+
+        if response.status_code != 200:
+            return "News nicht abrufbar"
+
+        news = response.json()
+
+        if len(news) == 0:
+            return "Keine aktuelle News"
+
+        return news[0]["headline"]
+
+    except Exception:
+
+        return "Newsfehler"
 
 BOT_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
@@ -66,10 +99,13 @@ message = "🚨 Top Verlierer\n\n"
 
 for stock in top_losers:
 
-    message += (
-        f"{stock['symbol']}\n"
-        f"{stock['change']:.2f}%\n\n"
-    )
+    reason = get_reason(stock["symbol"])
+
+message += (
+    f"📉 {stock['symbol']}\n"
+    f"{stock['change']:.2f}%\n"
+    f"Grund: {reason}\n\n"
+)
 
 url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
