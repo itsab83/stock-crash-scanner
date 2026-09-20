@@ -1,28 +1,29 @@
 import os
 import requests
 import yfinance as yf
-from datetime import date
+from datetime import date, timedelta
 
+BOT_TOKEN = os.environ["TELEGRAM_TOKEN"]
+CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 FINNHUB_API_KEY = os.environ["FINNHUB_API_KEY"]
+
 
 def get_reason(symbol):
 
     try:
 
-        from datetime import date, timedelta
+        to_date = date.today()
+        from_date = to_date - timedelta(days=3)
 
-to_date = date.today()
-from_date = to_date - timedelta(days=3)
+        url = (
+            "https://finnhub.io/api/v1/company-news"
+            f"?symbol={symbol}"
+            f"&from={from_date.isoformat()}"
+            f"&to={to_date.isoformat()}"
+            f"&token={FINNHUB_API_KEY}"
+        )
 
-url = (
-    "https://finnhub.io/api/v1/company-news"
-    f"?symbol={symbol}"
-    f"&from={from_date.isoformat()}"
-    f"&to={to_date.isoformat()}"
-    f"&token={FINNHUB_API_KEY}"
-)
-
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
 
         if response.status_code != 200:
             return "News nicht abrufbar"
@@ -34,9 +35,11 @@ url = (
 
         return news[0]["headline"]
 
-    except Exception:
+    except Exception as e:
 
+        print(f"Newsfehler {symbol}: {e}")
         return "Newsfehler"
+
 
 BOT_TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
@@ -96,19 +99,19 @@ for symbol in symbols:
 
 results.sort(key=lambda x: x["change"])
 
-top_losers = results[:10]
+top_losers = results[:5]
 
-message = "🚨 Top Verlierer\n\n"
+message = "🚨 Börsencrash Scanner\n\n"
 
 for stock in top_losers:
 
     reason = get_reason(stock["symbol"])
 
-message += (
-    f"📉 {stock['symbol']}\n"
-    f"{stock['change']:.2f}%\n"
-    f"Grund: {reason}\n\n"
-)
+    message += (
+        f"📉 {stock['symbol']}\n"
+        f"{stock['change']:.2f}%\n"
+        f"Grund: {reason}\n\n"
+    )
 
 url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 
