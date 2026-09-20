@@ -1,4 +1,3 @@
-
 import os
 import requests
 import yfinance as yf
@@ -47,6 +46,45 @@ def get_reason(symbol):
 
         print(f"Newsfehler {symbol}: {e}")
         return "Newsfehler"
+
+
+def classify_reason(reason):
+
+    text = reason.lower()
+
+    if any(word in text for word in [
+        "downgrade",
+        "cuts price target",
+        "lowers price target",
+        "analyst"
+    ]):
+        return "🟡 Analysten-Downgrade"
+
+    if any(word in text for word in [
+        "earnings",
+        "revenue",
+        "guidance",
+        "forecast",
+        "outlook"
+    ]):
+        return "🔴 Schwache Quartalszahlen / Ausblick"
+
+    if any(word in text for word in [
+        "lawsuit",
+        "investigation",
+        "sec",
+        "probe"
+    ]):
+        return "🔴 Rechtliches Risiko"
+
+    if any(word in text for word in [
+        "offering",
+        "share sale",
+        "secondary offering"
+    ]):
+        return "🟠 Kapitalmaßnahme"
+
+    return "⚪ Nicht eindeutig"
 
 
 symbols = set()
@@ -100,8 +138,8 @@ for symbol in symbols:
             / previous_close
         ) * 100
 
-        # Nur Aktien mit mindestens 6 % Verlust
-        if change > -5:
+        # Nur echte Crashs
+        if change > -6:
             continue
 
         results.append({
@@ -121,21 +159,18 @@ results.sort(
 
 top_losers = results[:10]
 
-# WICHTIG:
-# Keine Telegram-Nachricht versenden,
-# wenn keine Aktie den Filter erfüllt
+# Keine Nachricht versenden
+# wenn kein Treffer vorhanden
 
 if len(top_losers) == 0:
 
     print(
-        "Keine Aktien mit mehr als 6 % Verlust gefunden."
+        "Keine Aktien mit mehr als 6% Verlust gefunden."
     )
 
     exit()
 
-message = (
-    "🚨 Börsencrash Scanner\n\n"
-)
+message = "🚨 Börsencrash Scanner\n\n"
 
 for stock in top_losers:
 
@@ -143,9 +178,14 @@ for stock in top_losers:
         stock["symbol"]
     )
 
+    category = classify_reason(
+        reason
+    )
+
     message += (
         f"📉 {stock['symbol']}\n"
         f"{stock['change']:.2f}%\n"
+        f"Kategorie: {category}\n"
         f"Grund: {reason}\n\n"
     )
 
