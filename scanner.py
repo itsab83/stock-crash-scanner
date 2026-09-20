@@ -178,28 +178,45 @@ for symbol in symbols:
         stock = yf.Ticker(symbol)
 
         hist = stock.history(
-            period="2d"
-        )
+    period="3mo"
+)
 
-        if len(hist) < 2:
-            continue
+if len(hist) < 60:
+    continue
 
-        previous_close = hist["Close"].iloc[-2]
-        current_price = hist["Close"].iloc[-1]
+previous_close = hist["Close"].iloc[-2]
+current_price = hist["Close"].iloc[-1]
 
-        change = (
-            (current_price - previous_close)
-            / previous_close
-        ) * 100
+change = (
+    (current_price - previous_close)
+    / previous_close
+) * 100
 
-        # Nur relevante Kursstürze
-        if change > -4:
-            continue
+current_volume = hist["Volume"].iloc[-1]
 
-        results.append({
-            "symbol": symbol,
-            "change": change
-        })
+avg_volume = (
+    hist["Volume"]
+    .tail(60)
+    .mean()
+)
+
+volume_factor = (
+    current_volume / avg_volume
+)
+
+# Nur relevante Kursstürze
+if change > -4:
+    continue
+
+# Nur erhöhtes Handelsvolumen
+if volume_factor < 1.5:
+    continue
+
+results.append({
+    "symbol": symbol,
+    "change": change,
+    "volume_factor": volume_factor
+})
 
     except Exception as e:
 
@@ -255,14 +272,16 @@ for stock in top_losers:
     )
 
     message += (
-        f"📉 {stock['symbol']}\n"
-        f"Heute: {stock['change']:.2f}%\n"
-        f"6 Monate: {perf_text}\n"
-        f"52W-Hoch: {high_text}\n"
-        f"Kategorie: {category}\n"
-        f"Grund: {reason}\n"
-        f"Chart: {chart_url}\n\n"
-    )
+    f"📉 {stock['symbol']}\n"
+    f"Heute: {stock['change']:.2f}%\n"
+    f"Volumen: {stock['volume_factor']:.1f}x\n"
+    f"6 Monate: {perf_text}\n"
+    f"52W-Hoch: {high_text}\n"
+    f"Kategorie: {category}\n"
+    f"Grund: {reason}\n"
+    f"Chart: {chart_url}\n\n"
+)
+
 
 url = (
     f"https://api.telegram.org/"
