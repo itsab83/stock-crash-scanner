@@ -87,6 +87,34 @@ def classify_reason(reason):
     return "⚪ Nicht eindeutig"
 
 
+def get_6m_performance(symbol):
+
+    try:
+
+        stock = yf.Ticker(symbol)
+
+        hist = stock.history(
+            period="6mo"
+        )
+
+        if len(hist) < 2:
+            return None
+
+        first_price = hist["Close"].iloc[0]
+        last_price = hist["Close"].iloc[-1]
+
+        performance = (
+            (last_price - first_price)
+            / first_price
+        ) * 100
+
+        return performance
+
+    except Exception:
+
+        return None
+
+
 symbols = set()
 
 for filename in [
@@ -159,13 +187,10 @@ results.sort(
 
 top_losers = results[:10]
 
-# Keine Nachricht versenden
-# wenn kein Treffer vorhanden
-
 if len(top_losers) == 0:
 
     print(
-        "Keine Aktien mit mehr als 6% Verlust gefunden."
+        "Keine Aktien mit mehr als 4% Verlust gefunden."
     )
 
     exit()
@@ -182,9 +207,19 @@ for stock in top_losers:
         reason
     )
 
+    perf_6m = get_6m_performance(
+        stock["symbol"]
+    )
+
+    if perf_6m is None:
+        perf_text = "nicht verfügbar"
+    else:
+        perf_text = f"{perf_6m:.1f}%"
+
     message += (
         f"📉 {stock['symbol']}\n"
-        f"{stock['change']:.2f}%\n"
+        f"Heute: {stock['change']:.2f}%\n"
+        f"6 Monate: {perf_text}\n"
         f"Kategorie: {category}\n"
         f"Grund: {reason}\n\n"
     )
