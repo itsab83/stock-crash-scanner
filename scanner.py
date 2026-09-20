@@ -101,7 +101,7 @@ for symbol in symbols:
         ) * 100
 
         # Nur Aktien mit mindestens 6 % Verlust
-        if change > -4:
+        if change > -5:
             continue
 
         results.append({
