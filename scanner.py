@@ -113,4 +113,47 @@ for symbol in symbols:
         )
 
 results.sort(
-    key=lambda x: x["change"
+    key=lambda x: x["change"]
+)
+
+top_losers = results[:5]
+
+message = (
+    "🚨 Börsencrash Scanner\n\n"
+)
+
+if len(top_losers) == 0:
+
+    message += (
+        "✅ Keine Aktien mit mehr "
+        "als 4 % Verlust gefunden."
+    )
+
+else:
+
+    for stock in top_losers:
+
+        reason = get_reason(
+            stock["symbol"]
+        )
+
+        message += (
+            f"📉 {stock['symbol']}\n"
+            f"{stock['change']:.2f}%\n"
+            f"Grund: {reason}\n\n"
+        )
+
+url = (
+    f"https://api.telegram.org/"
+    f"bot{BOT_TOKEN}/sendMessage"
+)
+
+requests.post(
+    url,
+    data={
+        "chat_id": CHAT_ID,
+        "text": message
+    }
+)
+
+print(message)
