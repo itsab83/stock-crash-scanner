@@ -98,7 +98,7 @@ for symbol in symbols:
         ) * 100
 
         # Nur relevante Crashes
-        if change > -4:
+        if change > -6:
             continue
 
         results.append({
@@ -116,7 +116,7 @@ results.sort(
     key=lambda x: x["change"]
 )
 
-top_losers = results[:5]
+top_losers = results[:10]
 
 message = (
     "🚨 Börsencrash Scanner\n\n"
@@ -126,7 +126,7 @@ if len(top_losers) == 0:
 
     message += (
         "✅ Keine Aktien mit mehr "
-        "als 4 % Verlust gefunden."
+        "als 6 % Verlust gefunden."
     )
 
 else:
