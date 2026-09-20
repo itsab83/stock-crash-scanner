@@ -139,7 +139,7 @@ for symbol in symbols:
         ) * 100
 
         # Nur echte Crashs
-        if change > -6:
+        if change > -4:
             continue
 
         results.append({
