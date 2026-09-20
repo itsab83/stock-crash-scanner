@@ -178,45 +178,49 @@ for symbol in symbols:
         stock = yf.Ticker(symbol)
 
         hist = stock.history(
-    period="3mo"
-)
+            period="3mo"
+        )
 
-if len(hist) < 60:
-    continue
+        if len(hist) < 60:
+            continue
 
-previous_close = hist["Close"].iloc[-2]
-current_price = hist["Close"].iloc[-1]
+        previous_close = hist["Close"].iloc[-2]
+        current_price = hist["Close"].iloc[-1]
 
-change = (
-    (current_price - previous_close)
-    / previous_close
-) * 100
+        change = (
+            (current_price - previous_close)
+            / previous_close
+        ) * 100
 
-current_volume = hist["Volume"].iloc[-1]
+        current_volume = hist["Volume"].iloc[-1]
 
-avg_volume = (
-    hist["Volume"]
-    .tail(60)
-    .mean()
-)
+        avg_volume = (
+            hist["Volume"]
+            .tail(60)
+            .mean()
+        )
 
-volume_factor = (
-    current_volume / avg_volume
-)
+        volume_factor = (
+            current_volume / avg_volume
+        )
 
-# Nur relevante Kursstürze
-if change > -4:
-    continue
+        # Nur relevante Kursstürze
+        if change > -4:
+            continue
 
-# Nur erhöhtes Handelsvolumen
-if volume_factor < 1.5:
-    continue
+        # Nur erhöhtes Volumen
+        if volume_factor < 1.5:
+            continue
 
-results.append({
-    "symbol": symbol,
-    "change": change,
-    "volume_factor": volume_factor
-})
+        results.append({
+            "symbol": symbol,
+            "change": change,
+            "volume_factor": volume_factor
+        })
+
+    except Exception as e:
+
+        print(f"Fehler bei {symbol}: {e}")
 
     except Exception as e:
 
