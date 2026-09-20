@@ -88,7 +88,7 @@ for symbol in symbols:
             / previous_close
         ) * 100
         
-        if change > -5:
+        if change > -4:
             continue
             
         results.append({
