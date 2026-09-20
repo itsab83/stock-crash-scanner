@@ -216,13 +216,18 @@ for stock in top_losers:
     else:
         perf_text = f"{perf_6m:.1f}%"
 
-    message += (
-        f"📉 {stock['symbol']}\n"
-        f"Heute: {stock['change']:.2f}%\n"
-        f"6 Monate: {perf_text}\n"
-        f"Kategorie: {category}\n"
-        f"Grund: {reason}\n\n"
-    )
+    chart_url = (
+    f"https://finance.yahoo.com/chart/{stock['symbol']}"
+)
+
+message += (
+    f"📉 {stock['symbol']}\n"
+    f"Heute: {stock['change']:.2f}%\n"
+    f"6 Monate: {perf_text}\n"
+    f"Kategorie: {category}\n"
+    f"Grund: {reason}\n"
+    f"Chart: {chart_url}\n\n"
+)
 
 url = (
     f"https://api.telegram.org/"
