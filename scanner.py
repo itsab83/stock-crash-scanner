@@ -87,7 +87,10 @@ for symbol in symbols:
             (current_price - previous_close)
             / previous_close
         ) * 100
-
+        
+        if change > -5:
+            continue
+            
         results.append({
             "symbol": symbol,
             "change": change
